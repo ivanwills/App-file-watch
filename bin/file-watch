@@ -118,12 +118,16 @@ sub changed {
 
     if ( !$changed{$file} || $changed{$file}{time} != time ) {
         my @match = grep { $evt->$_() } @{ $option{type} };
-        warn "$file - @match\n" if @match;
 
-        if ($option{command}) {
-            system $option{command};
+        if (@match) {
+            warn "$file - @match\n";
+
+            if ($option{command}) {
+                system $option{command};
+            }
         }
     }
+
     $changed{$file}{time} = time;
     $changed{$file}{types} = {
         %{ $changed{$file}{types} || {} },
