@@ -98,7 +98,7 @@ sub main {
         $option{type} = $types;
     }
     else {
-        $option{type} ||= ['IN_MODIFY'];
+        $option{type} ||= ['IN_MODIFY', 'IN_MOVE_SELF'];
     }
 
     if ( $option{report} ) {
