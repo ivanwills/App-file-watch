@@ -44,6 +44,8 @@ my %option = (
     help    => 0,
     VERSION => 0,
 );
+my %watch;
+my $inotify;
 
 main();
 exit 0;
@@ -75,11 +77,9 @@ sub main {
     }
 
     # do stuff here
-    my @watches;
-    my @watchers;
     my @files = map { path($_) } @ARGV ? @ARGV : ('.');
     my $tc = File::TypeCategories->new();
-    my $inotify = Linux::Inotify2->new;
+    $inotify = Linux::Inotify2->new;
 
     while ( my $file = shift @files ) {
         next if !$tc->file_ok($file);
@@ -90,8 +90,7 @@ sub main {
         }
 
         warn "$file\n" if $option{verbose};
-        push @watches, $inotify->watch( $file, Linux::Inotify2::IN_ALL_EVENTS(), \&changed );
-        push @watchers, AE::io $inotify->fileno, 0, sub { $inotify->poll };
+        watch($file);
     }
 
     if ( $option{type} && @{ $option{type} } == 1 && $option{type}[0] eq 'ALL' ) {
@@ -111,6 +110,20 @@ sub main {
     return;
 }
 
+sub watch {
+    my ($file) = @_;
+
+    warn "The file '$file' no longer exists!\n" if !-e $file;
+
+    $watch{$file} = {
+        notify => scalar $inotify->watch( $file, Linux::Inotify2::IN_ALL_EVENTS(), \&changed ),
+        ae     => scalar AE::io $inotify->fileno, 0, sub { $inotify->poll },
+    };
+
+    return;
+}
+
+my @refresh;
 my %changed;
 sub changed {
     my ($evt) = @_;
@@ -133,6 +146,14 @@ sub changed {
         %{ $changed{$file}{types} || {} },
         map { $_ => 1 } grep { $evt->$_() } @$types
     };
+
+    push @refresh, AnyEvent->timer(
+        after => 1,
+        cb    => sub {
+            warn "re-watching";
+            watch($file);
+        }
+    );
 
     return;
 }
