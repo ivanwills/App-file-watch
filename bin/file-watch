@@ -158,9 +158,17 @@ sub report {
         print "$file\t", ( join ', ', sort keys %{ $change{$file}{types} } ), "\n";
     }
 
-    %changes = ();
+    if ($changes eq 'changes') {
+        if ($option{command}) {
+            local $ENV{CHANGED} = join ':', sort keys \%change;
+            system $option{command};
+        }
+        %changes = ();
 
-    $changes eq 'changes' ? return : exit;
+        return;
+    }
+
+    exit;
 }
 
 __DATA__
