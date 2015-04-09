@@ -105,6 +105,14 @@ sub main {
         $SIG{INT} = \&report;
     }
 
+    my $refresh, AnyEvent->timer(
+        after    => 1,
+        interval => 1,
+        cb       => sub {
+            report('changes');
+        }
+    );
+
     AnyEvent::Loop::run;
 
     return;
@@ -125,25 +133,20 @@ sub watch {
 
 my @refresh;
 my %changed;
+my %changes;
 sub changed {
     my ($evt) = @_;
     my $file = $evt->{w}{name};
 
-    if ( !$changed{$file} || $changed{$file}{time} != time ) {
-        my @match = grep { $evt->$_() } @{ $option{type} };
-
-        if (@match) {
-            warn "$file - @match\n";
-
-            if ($option{command}) {
-                system $option{command};
-            }
-        }
-    }
-
     $changed{$file}{time} = time;
     $changed{$file}{types} = {
         %{ $changed{$file}{types} || {} },
+        map { $_ => 1 } grep { $evt->$_() } @$types
+    };
+
+    $changes{$file}{time} = time;
+    $changes{$file}{types} = {
+        %{ $changes{$file}{types} || {} },
         map { $_ => 1 } grep { $evt->$_() } @$types
     };
 
@@ -159,11 +162,17 @@ sub changed {
 }
 
 sub report {
-    for my $file ( sort keys %changed ) {
-        print "$file\t", ( join ', ', sort keys %{ $changed{$file}{types} } ), "\n";
+    my $changes = shift;
+
+    my %change = $changes ? %changes : %changed;
+
+    for my $file ( sort keys %change ) {
+        print "$file\t", ( join ', ', sort keys %{ $change{$file}{types} } ), "\n";
     }
 
-    exit;
+    %changes = ();
+
+    $changes ? return : exit;
 }
 
 __DATA__
