@@ -50,13 +50,13 @@ exit 0;
 
 sub main {
 
-
     Getopt::Long::Configure('bundling');
     GetOptions(
         \%option,
         'dir|d!',
         'type|t=s@',
         'report|r',
+        'command|cmd|c=s',
         'verbose|v+',
         'man',
         'help',
@@ -119,6 +119,10 @@ sub changed {
     if ( !$changed{$file} || $changed{$file}{time} != time ) {
         my @match = grep { $evt->$_() } @{ $option{type} };
         warn "$file - @match\n" if @match;
+
+        if ($option{command}) {
+            system $option{command};
+        }
     }
     $changed{$file}{time} = time;
     $changed{$file}{types} = {
