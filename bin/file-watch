@@ -105,13 +105,7 @@ sub main {
         $SIG{INT} = \&report;
     }
 
-    my $refresh, AnyEvent->timer(
-        after    => 1,
-        interval => 1,
-        cb       => sub {
-            report('changes');
-        }
-    );
+    my $refresh = AE::timer(1, 1, sub { report('changes'); });
 
     AnyEvent::Loop::run;
 
@@ -150,13 +144,7 @@ sub changed {
         map { $_ => 1 } grep { $evt->$_() } @$types
     };
 
-    push @refresh, AnyEvent->timer(
-        after => 1,
-        cb    => sub {
-            warn "re-watching";
-            watch($file);
-        }
-    );
+    push @refresh, AE::timer(1, 0, sub { watch($file); });
 
     return;
 }
@@ -164,7 +152,7 @@ sub changed {
 sub report {
     my $changes = shift;
 
-    my %change = $changes ? %changes : %changed;
+    my %change = $changes eq 'changes' ? %changes : %changed;
 
     for my $file ( sort keys %change ) {
         print "$file\t", ( join ', ', sort keys %{ $change{$file}{types} } ), "\n";
@@ -172,7 +160,7 @@ sub report {
 
     %changes = ();
 
-    $changes ? return : exit;
+    $changes eq 'changes' ? return : exit;
 }
 
 __DATA__
