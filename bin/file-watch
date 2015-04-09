@@ -157,7 +157,7 @@ This documentation refers to file-watch version 0.001
 
  OPTIONS:
   -d --dir      Check directories
-     --no-dir   Don't check directories
+     --no-dir   Don't check directories (Default)
   -t --type[=]str
                 Specify the type of file events to listen for, more than
                 one event can be specified.
@@ -177,6 +177,8 @@ This documentation refers to file-watch version 0.001
                  - ALL - special pseudo event setting all events on so you can
                          see which ones are actually fired
   -r --report   When killed, a report will be generated of all files modified
+  -c --command[=]'command to run'
+                When a file is detected to have changed this command can be run
 
   -v --verbose  Show more detailed option
      --version  Prints the version information
