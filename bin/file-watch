@@ -222,10 +222,10 @@ can be found in L<Linux::Inotify2>.
 
 =head2 Running Commands
 
-When you use the C<--command> option changes will be chuncked and displayed
+When you use the C<--command> option changes will be chunked and displayed
 every second. The program you run can find the files that triggered it by
 inspecting the environment variable C<$CHANGED> which is a colon (:)
-seperated list of files.
+separated list of files.
 
 =head1 SUBROUTINES/METHODS
 
