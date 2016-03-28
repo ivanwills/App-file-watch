@@ -141,7 +141,9 @@ sub changed {
     $changes{$file}{time} = time;
     $changes{$file}{types} = {
         %{ $changes{$file}{types} || {} },
-        map { $_ => 1 } grep { $evt->$_() } @$types
+        map { $_ => 1 }
+        grep { $evt->$_() }
+        @{ $option{type} }
     };
 
     push @refresh, AE::timer(1, 0, sub { watch($file); });
@@ -153,13 +155,14 @@ sub report {
     my $changes = shift;
 
     my %change = $changes eq 'changes' ? %changes : %changed;
+    my $files_changed = keys %change;
 
     for my $file ( sort keys %change ) {
         print "$file\t", ( join ', ', sort keys %{ $change{$file}{types} } ), "\n";
     }
 
     if ($changes eq 'changes') {
-        if ($option{command}) {
+        if ($option{command} && $files_changed) {
             local $ENV{CHANGED} = join ':', sort keys \%change;
             system $option{command};
         }
