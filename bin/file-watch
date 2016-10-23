@@ -19,7 +19,7 @@ use AnyEvent::Loop;
 use Linux::Inotify2;
 use File::TypeCategories;
 
-our $VERSION = 0.001;
+our $VERSION = 0.004;
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 my $types = [qw/
     IN_ACCESS
@@ -182,7 +182,7 @@ file-watch - Watch files and directories for changes
 
 =head1 VERSION
 
-This documentation refers to file-watch version 0.001
+This documentation refers to file-watch version 0.004
 
 =head1 SYNOPSIS
 
