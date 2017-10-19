@@ -19,8 +19,10 @@ terminals:
     watch:
       - lib
       - bin
-  2: []
-
+  2:
+    edit:
+      - bin
+      - lib
   3: []
 
   4: []
